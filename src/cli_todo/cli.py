@@ -32,8 +32,8 @@ def main(argv=None):
         if ok:
             print(f"[done] {args.id}")
         else:
-            print(f"No task with id {args.id} found.")
-        return 0
+            print(f"Error: No task with id {args.id} found.", file=sys.stderr)
+        return 1
     if args.cmd == "clear":
         removed = clear_completed()
         print(f"[cleared] {removed} completed task(s)")
