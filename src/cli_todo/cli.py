@@ -5,6 +5,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="todo", description="Minimal CLI To-Do app")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
+    p_list = sub.add_parser("list", help="List tasks")
+    p_list.add_argument("--all", action="store_true", help="Show active and completed")
+    p_list.add_argument("--completed", action="store_true", help="Show only completed")
+    p_list.add_argument("--format", choices=["text", "json"], default="text",
+                        help="Output format (default: text)")
+
     p_add = sub.add_parser("add")
     p_add.add_argument("description")
 
@@ -20,13 +26,38 @@ def main(argv=None):
         print(f"[added] {t.id}: {t.description}")
         return 0
     if args.cmd == "list":
-        tasks = list_tasks()
-        if not tasks:
-            print("(no active tasks)")
+        include_completed = args.all
+        only_completed = args.completed
+
+        # mutually exclusive guard (optional, but nice)
+        if include_completed and only_completed:
+            print("Error: use either --all or --completed, not both.", file=sys.stderr)
+            return 1
+
+        tasks = list_tasks(include_completed=include_completed, only_completed=only_completed)
+
+        if args.format == "json":
+            import json
+            # Convert dataclasses to dicts safely if needed
+            # tasks may be dataclass objects in your version; handle both cases
+            try:
+                from dataclasses import asdict
+                payload = [asdict(t) for t in tasks]
+            except Exception:
+                payload = [t.__dict__ if hasattr(t, "__dict__") else t for t in tasks]
+            print(json.dumps(payload, indent=2))
             return 0
+
+        # text output (default)
+        if not tasks:
+            print("(no tasks)")
+            return 0
+
         for t in tasks:
-            print(f"{t.id}. {t.description}")
+            status = "✓" if t.completed else " "
+            print(f"{t.id}. [{status}] {t.description}")
         return 0
+
     if args.cmd == "done":
         ok = complete_task(args.id)
         if ok:

@@ -35,8 +35,14 @@ def add_task(desc):
     save_tasks(tasks)
     return task
 
-def list_tasks():
-    return [t for t in load_tasks() if not t.completed]
+def list_tasks(include_completed=False, only_completed=False):
+    tasks = load_tasks()
+    if only_completed:
+        return [t for t in tasks if t.completed]
+    if include_completed:
+        return tasks
+    return [t for t in tasks if not t.completed]
+
 
 def complete_task(task_id):
     tasks = load_tasks()
