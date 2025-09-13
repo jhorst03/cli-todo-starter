@@ -8,4 +8,5 @@ src/cli_todo_starter.egg-info/SOURCES.txt
 src/cli_todo_starter.egg-info/dependency_links.txt
 src/cli_todo_starter.egg-info/entry_points.txt
 src/cli_todo_starter.egg-info/top_level.txt
+tests/test_cli_error.py
 tests/test_todo.py
