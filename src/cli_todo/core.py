@@ -54,6 +54,20 @@ def complete_task(task_id):
             return True
     return False
 
+def reopen_task(task_id: int) -> bool:
+    """Mark a completed task back to active. Return True if changed, else False."""
+    tasks = load_tasks()
+    changed = False
+    for t in tasks:
+        if t.id == task_id:
+            if t.completed:
+                t.completed = False
+                t.completed_at = ""
+                save_tasks(tasks)
+                changed = True
+            break
+    return changed
+
 def clear_completed():
     tasks = load_tasks()
     keep = [t for t in tasks if not t.completed]

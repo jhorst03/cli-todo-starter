@@ -19,6 +19,9 @@ def main(argv=None):
     p_done.add_argument("id", type=int)
     sub.add_parser("clear")
 
+    p_reopen = sub.add_parser("reopen", help="Reopen a completed task by id")
+    p_reopen.add_argument("id", type=int)
+
     args = parser.parse_args(argv)
 
     if args.cmd == "add":
@@ -65,6 +68,23 @@ def main(argv=None):
         else:
             print(f"Error: No task with id {args.id} found.", file=sys.stderr)
         return 1
+    
+    if args.cmd == "reopen":
+        from .core import reopen_task, list_tasks
+        ok = reopen_task(args.id)
+        if ok:
+            print(f"[reopened] {args.id}")
+            return 0
+        else:
+            # either not found or already active
+            # check if it exists but is active to tailor the message (optional)
+            tasks_all = list_tasks(include_completed=True)
+            if any(t.id == args.id for t in tasks_all):
+                print(f"Error: task {args.id} is already active.", file=sys.stderr)
+            else:
+                print(f"Error: no task with id {args.id} found.", file=sys.stderr)
+            return 1
+        
     if args.cmd == "clear":
         removed = clear_completed()
         print(f"[cleared] {removed} completed task(s)")
