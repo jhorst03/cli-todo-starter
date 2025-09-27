@@ -68,6 +68,16 @@ def reopen_task(task_id: int) -> bool:
             break
     return changed
 
+def edit_task(task_id: int, new_description: str) -> bool:
+    """Update the description of an existing task. Return True if changed."""
+    tasks = load_tasks()
+    for t in tasks:
+        if t.id == task_id:
+            t.description = new_description
+            save_tasks(tasks)
+            return True
+    return False
+
 def clear_completed():
     tasks = load_tasks()
     keep = [t for t in tasks if not t.completed]
