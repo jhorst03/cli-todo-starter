@@ -22,6 +22,10 @@ def main(argv=None):
     p_reopen = sub.add_parser("reopen", help="Reopen a completed task by id")
     p_reopen.add_argument("id", type=int)
 
+    p_edit = sub.add_parser("edit", help="Edit a task's description by id")
+    p_edit.add_argument("id", type=int, help="Task id")
+    p_edit.add_argument("description", help="New task description")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "add":
@@ -83,6 +87,16 @@ def main(argv=None):
                 print(f"Error: task {args.id} is already active.", file=sys.stderr)
             else:
                 print(f"Error: no task with id {args.id} found.", file=sys.stderr)
+            return 1
+        
+    if args.cmd == "edit":
+        from .core import edit_task
+        ok = edit_task(args.id, args.description)
+        if ok:
+            print(f"[edited] {args.id}: {args.description}")
+            return 0
+        else:
+            print(f"Error: no task with id {args.id} found.", file=sys.stderr)
             return 1
         
     if args.cmd == "clear":
