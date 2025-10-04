@@ -26,6 +26,9 @@ def main(argv=None):
     p_edit.add_argument("id", type=int, help="Task id")
     p_edit.add_argument("description", help="New task description")
 
+    p_search = sub.add_parser("search", help="Search tasks by keyword")
+    p_search.add_argument("keyword", help="Keyword to search for")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "add":
@@ -98,6 +101,17 @@ def main(argv=None):
         else:
             print(f"Error: no task with id {args.id} found.", file=sys.stderr)
             return 1
+        
+    if args.cmd == "search":
+        from .core import search_tasks
+        results = search_tasks(args.keyword)
+        if not results:
+            print("No results found.")
+            return 0
+        for t in results:
+            status = "✓" if t.completed else " "
+            print(f"{t.id}. [{status}] {t.description}")
+        return 0
         
     if args.cmd == "clear":
         removed = clear_completed()

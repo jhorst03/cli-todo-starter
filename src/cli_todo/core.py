@@ -78,6 +78,12 @@ def edit_task(task_id: int, new_description: str) -> bool:
             return True
     return False
 
+def search_tasks(keyword: str):
+    """Return tasks whose description contains the keyword (case-insensitive)."""
+    tasks = load_tasks()
+    kw = keyword.lower()
+    return [t for t in tasks if kw in t.description.lower()]
+
 def clear_completed():
     tasks = load_tasks()
     keep = [t for t in tasks if not t.completed]
