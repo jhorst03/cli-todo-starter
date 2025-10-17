@@ -84,6 +84,20 @@ def search_tasks(keyword: str):
     kw = keyword.lower()
     return [t for t in tasks if kw in t.description.lower()]
 
+def compute_stats():
+    """Return a dict with total, active, completed, completion_rate (0..1 float)."""
+    tasks = load_tasks()
+    total = len(tasks)
+    completed = sum(1 for t in tasks if t.completed)
+    active = total - completed
+    completion_rate = (completed / total) if total > 0 else 0.0
+    return {
+        "total": total,
+        "active": active,
+        "completed": completed,
+        "completion_rate": round(completion_rate, 3),
+    }
+
 def clear_completed():
     tasks = load_tasks()
     keep = [t for t in tasks if not t.completed]

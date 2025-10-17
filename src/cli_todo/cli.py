@@ -29,6 +29,9 @@ def main(argv=None):
     p_search = sub.add_parser("search", help="Search tasks by keyword")
     p_search.add_argument("keyword", help="Keyword to search for")
 
+    p_stats = sub.add_parser("stats", help="Show totals and completion rate")
+    p_stats.add_argument("--format", choices=["text", "json"], default="text", help="Output format (default: text)")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "add":
@@ -112,6 +115,20 @@ def main(argv=None):
             status = "✓" if t.completed else " "
             print(f"{t.id}. [{status}] {t.description}")
         return 0
+    
+    if args.cmd == "stats":
+        from .core import compute_stats
+        s = compute_stats()
+        if args.format == "json":
+            import json
+            print(json.dumps(s, indent=2))
+            return 0
+        print(f"Total: {s['total']}")
+        print(f"Active: {s['active']}")
+        print(f"Completed: {s['completed']}")
+        print(f"Completion rate: {s['completion_rate']}")
+        return 0
+
         
     if args.cmd == "clear":
         removed = clear_completed()
