@@ -1,7 +1,8 @@
 import json, os
 from pathlib import Path
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
+from typing import List
 
 def _db_dir():
     return Path(os.environ.get("CLI_TODO_DB_DIR", Path.home() / ".cli_todo"))
@@ -16,33 +17,48 @@ class Task:
     completed: bool = False
     created_at: str = ""
     completed_at: str = ""
+    tags: List[str] = field(default_factory=list)
 
 def load_tasks():
     path = _db_path()
     if not path.exists():
         return []
-    return [Task(**t) for t in json.loads(path.read_text())]
+    data = json.loads(path.read_text())
+    tasks = []
+    for t in data:
+        # ensure tags exists
+        if "tags" not in t or t["tags"] is None:
+            t["tags"] = []
+        tasks.append(Task(**t))
+    return tasks
 
 def save_tasks(tasks):
     _db_dir().mkdir(parents=True, exist_ok=True)
     (_db_path()).write_text(json.dumps([asdict(t) for t in tasks], indent=2))
 
-def add_task(desc):
+def add_task(desc, tags=None):
+    if tags is None:
+        tags = []
     tasks = load_tasks()
     new_id = max([t.id for t in tasks], default=0) + 1
-    task = Task(new_id, desc, False, datetime.utcnow().isoformat(), "")
+    task = Task(new_id, desc, False, datetime.utcnow().isoformat(), "", tags)
     tasks.append(task)
     save_tasks(tasks)
     return task
 
-def list_tasks(include_completed=False, only_completed=False):
+def list_tasks(include_completed=False, only_completed=False, tag=None):
     tasks = load_tasks()
     if only_completed:
-        return [t for t in tasks if t.completed]
-    if include_completed:
-        return tasks
-    return [t for t in tasks if not t.completed]
+        tasks = [t for t in tasks if t.completed]
+    elif include_completed:
+        pass  # keep all
+    else:
+        tasks = [t for t in tasks if not t.completed]
 
+    if tag:
+        tag_l = tag.lower()
+        tasks = [t for t in tasks if any(tag_l == tg.lower() for tg in t.tags)]
+    return tasks
 
 def complete_task(task_id):
     tasks = load_tasks()
