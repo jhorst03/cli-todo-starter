@@ -8,11 +8,12 @@ def main(argv=None):
     p_list = sub.add_parser("list", help="List tasks")
     p_list.add_argument("--all", action="store_true", help="Show active and completed")
     p_list.add_argument("--completed", action="store_true", help="Show only completed")
-    p_list.add_argument("--format", choices=["text", "json"], default="text",
-                        help="Output format (default: text)")
+    p_list.add_argument("--format", choices=["text", "json"], default="text", help="Output format (default: text)")
+    p_list.add_argument("--tag", help="Filter tasks by tag name", default=None)
 
     p_add = sub.add_parser("add")
     p_add.add_argument("description")
+    p_add.add_argument("--tags", help="Comma-separated tags to attach (e.g., work,docs)", default="")
 
     sub.add_parser("list")
     p_done = sub.add_parser("done")
@@ -35,9 +36,11 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.cmd == "add":
-        t = add_task(args.description)
+        tags = [t.strip() for t in args.tags.split(",") if t.strip()] if args.tags else []
+        t = add_task(args.description, tags=tags)
         print(f"[added] {t.id}: {t.description}")
         return 0
+
     if args.cmd == "list":
         include_completed = args.all
         only_completed = args.completed
@@ -47,7 +50,7 @@ def main(argv=None):
             print("Error: use either --all or --completed, not both.", file=sys.stderr)
             return 1
 
-        tasks = list_tasks(include_completed=include_completed, only_completed=only_completed)
+        tasks = list_tasks(include_completed=include_completed, only_completed=only_completed, tag=args.tag)
 
         if args.format == "json":
             import json
@@ -68,7 +71,8 @@ def main(argv=None):
 
         for t in tasks:
             status = "✓" if t.completed else " "
-            print(f"{t.id}. [{status}] {t.description}")
+            tag_str = f" #{','.join(t.tags)}" if t.tags else ""
+            print(f"{t.id}. [{status}] {t.description}{tag_str}")
         return 0
 
     if args.cmd == "done":
