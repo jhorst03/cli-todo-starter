@@ -100,6 +100,15 @@ def search_tasks(keyword: str):
     kw = keyword.lower()
     return [t for t in tasks if kw in t.description.lower()]
 
+def delete_task(task_id: int) -> bool:
+    """Delete a task by id. Return True if deleted, else False."""
+    tasks = load_tasks()
+    new_tasks = [t for t in tasks if t.id != task_id]
+    if len(new_tasks) == len(tasks):
+        return False
+    save_tasks(new_tasks)
+    return True
+
 def compute_stats():
     """Return a dict with total, active, completed, completion_rate (0..1 float)."""
     tasks = load_tasks()
