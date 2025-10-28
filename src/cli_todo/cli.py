@@ -30,6 +30,9 @@ def main(argv=None):
     p_search = sub.add_parser("search", help="Search tasks by keyword")
     p_search.add_argument("keyword", help="Keyword to search for")
 
+    p_delete = sub.add_parser("delete", help="Delete a task by id")
+    p_delete.add_argument("id", type=int, help="Task id to delete")
+
     p_stats = sub.add_parser("stats", help="Show totals and completion rate")
     p_stats.add_argument("--format", choices=["text", "json"], default="text", help="Output format (default: text)")
 
@@ -120,6 +123,16 @@ def main(argv=None):
             print(f"{t.id}. [{status}] {t.description}")
         return 0
     
+    if args.cmd == "delete":
+        from .core import delete_task
+        ok = delete_task(args.id)
+        if ok:
+            print(f"[deleted] {args.id}")
+            return 0
+        else:
+            print(f"Error: no task with id {args.id} found.", file=sys.stderr)
+            return 1
+
     if args.cmd == "stats":
         from .core import compute_stats
         s = compute_stats()
